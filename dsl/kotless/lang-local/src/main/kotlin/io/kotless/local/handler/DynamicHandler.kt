@@ -22,6 +22,8 @@ internal class DynamicHandler(private val handler: LambdaHandler) : AbstractHand
             method = HttpMethod.valueOf(request.method),
             myHeaders = request.headerNames.asSequence().map { it to request.getHeader(it) }.toMap(),
             myQueryStringParameters = request.parameterNames.asSequence().map { it to request.getParameter(it) }.toMap(),
+            multiValueHeaders = null,
+            multiValueQueryStringParameters = null,
             pathParameters = emptyMap(),
             requestContext = HttpRequest.RequestContext(
                 resourcePath = request.requestURI,

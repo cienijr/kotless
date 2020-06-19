@@ -22,7 +22,8 @@ class KotlessRequest(val query: HttpRequest, call: ApplicationCall) : BaseApplic
     override val cookies: RequestCookies = RequestCookies(this)
 
     override val headers: Headers = Headers.build {
-        query.headers?.forEach { appendAll(it.key, it.value) }
+        // query.headers?.forEach { appendAll(it.key, it.value) }
+        query.multiValueHeaders?.forEach { appendAll(it.key, it.value) }
     }
 
     override val local: RequestConnectionPoint = object : RequestConnectionPoint {
@@ -38,7 +39,8 @@ class KotlessRequest(val query: HttpRequest, call: ApplicationCall) : BaseApplic
     }
 
     override val queryParameters: Parameters = Parameters.build {
-        query.params?.forEach { append(it.key, it.value) }
+        // query.params?.forEach { append(it.key, it.value) }
+        query.multiValueQueryStringParameters?.forEach { appendAll(it.key, it.value) }
     }
 
     override fun receiveChannel() = ByteReadChannel(query.body ?: ByteArray(0))

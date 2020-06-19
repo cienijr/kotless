@@ -15,6 +15,8 @@ data class HttpRequest(
     @SerialName("httpMethod") val method: HttpMethod,
     @SerialName("headers") val myHeaders: Map<String, String>?,
     @SerialName("queryStringParameters") val myQueryStringParameters: Map<String, String>?,
+    @SerialName("multiValueHeaders") val multiValueHeaders: Map<String, List<String>>?,
+    @SerialName("multiValueQueryStringParameters") val multiValueQueryStringParameters: Map<String, List<String>>?,
     val pathParameters: Map<String, String>?,
     val requestContext: RequestContext,
     @SerialName("body") val myBody: String?,
