@@ -7,11 +7,15 @@ object Text {
     fun desnake(text: String): List<String> = text.split("_")
     fun dehyphen(text: String): List<String> = text.split("-")
     fun dedot(text: String): List<String> = text.split(".")
+    fun deopenbracket(text: String): List<String> = text.split("{")
+    fun declosebracket(text: String): List<String> = text.split("}")
 
     fun deall(text: String) = decamelize(text)
         .flatMap { desnake(it) }
         .flatMap { dehyphen(it) }
         .flatMap { dedot(it) }
+        .flatMap { deopenbracket(it) }
+        .flatMap { declosebracket(it) }
         .filter { it.isNotBlank() }
 
     const val indent = 2
