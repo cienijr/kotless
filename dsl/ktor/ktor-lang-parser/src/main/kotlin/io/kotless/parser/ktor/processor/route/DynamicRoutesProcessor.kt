@@ -50,20 +50,35 @@ internal object DynamicRoutesProcessor : SubTypesProcessor<Unit>() {
                     val path = element.getArgumentOrNull("path", binding)?.asPath(binding)
                         ?.let { URIPath(outer, it) }
                         ?: outer
-                    val name = "${path.parts.joinToString(separator = "_")}_${method.name}"
 
-                    val key = TypedStorage.Key<Lambda>()
-                    val function = Lambda(name, context.jar, entrypoint, context.lambda, permissions)
-
-                    context.resources.register(key, function)
-                    context.routes.register(Webapp.ApiGateway.DynamicRoute(method, path, key))
-
-                    if (context.config.optimization.autowarm.enable) {
-                        context.events.register(
-                            Events.Scheduled(name, everyNMinutes(context.config.optimization.autowarm.minutes), ScheduledEventType.Autowarm, key)
-                        )
-                    }
+                    registerHandler(path, method, context, entrypoint, permissions)
+                    registerOptionsHandlerIfNeeded(path, method, context, entrypoint, permissions)
                 }
+            }
+        }
+    }
+
+    private fun registerHandler(path: URIPath, method: HttpMethod, context: ProcessorContext, entrypoint: Lambda.Entrypoint, permissions: Set<Permission>) {
+        val name = "${path.parts.joinToString(separator = "_")}_${method.name}"
+
+        val key = TypedStorage.Key<Lambda>()
+        val function = Lambda(name, context.jar, entrypoint, context.lambda, permissions)
+
+        context.resources.register(key, function)
+        context.routes.register(Webapp.ApiGateway.DynamicRoute(method, path, key))
+
+        if (context.config.optimization.autowarm.enable) {
+            context.events.register(
+                Events.Scheduled(name, everyNMinutes(context.config.optimization.autowarm.minutes), ScheduledEventType.Autowarm, key)
+            )
+        }
+    }
+
+    private fun registerOptionsHandlerIfNeeded(path: URIPath, method: HttpMethod, context: ProcessorContext, entrypoint: Lambda.Entrypoint, permissions: Set<Permission>) {
+        if (method != HttpMethod.GET && method != HttpMethod.OPTIONS) {
+            val pathString = path.toAbsoluteString()
+            if (context.routes.dynamics.none { it.method == HttpMethod.OPTIONS && it.path.toAbsoluteString() == pathString }) {
+                registerHandler(path, HttpMethod.OPTIONS, context, entrypoint, permissions)
             }
         }
     }
