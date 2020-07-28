@@ -22,6 +22,11 @@ enum class AwsResource(val prefix: String, val glob: (region: String, account: S
         glob = { region, account -> "arn:aws:logs:$region:$account" },
         read = setOf("GetLogEvents", "GetLogRecord", "GetLogGroupFields", "GetQueryResults", "DescribeLogGroups", "DescribeLogStreams", "DescribeMetricFilters"),
         write = setOf("CreateLogGroup", "DeleteLogGroup", "CreateLogStream", "DeleteLogStream", "PutLogEvents", "DeleteMetricFilter", "PutMetricFilter")
+    ),
+    SNS("sns",
+        glob = { region, account -> "arn:aws:sns:$region:$account" },
+        read = setOf(),
+        write = setOf("Publish")
     );
 
     companion object {

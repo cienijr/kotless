@@ -5,6 +5,7 @@ import io.kotless.Permission
 import io.kotless.PermissionLevel
 import io.kotless.dsl.lang.DynamoDBTable
 import io.kotless.dsl.lang.S3Bucket
+import io.kotless.dsl.lang.SNSTopic
 import io.kotless.dsl.lang.SSMParameters
 import io.kotless.parser.utils.psi.annotation.getAnnotations
 import io.kotless.parser.utils.psi.annotation.getArrayValue
@@ -16,7 +17,7 @@ import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 
 object PermissionsProcessor {
-    private val PERMISSION_ANNOTATIONS_CLASSES = listOf(S3Bucket::class, SSMParameters::class, DynamoDBTable::class)
+    private val PERMISSION_ANNOTATIONS_CLASSES = listOf(S3Bucket::class, SSMParameters::class, DynamoDBTable::class, SNSTopic::class)
 
     fun process(func: KtExpression, context: BindingContext): Set<Permission> {
         val permissions = HashSet<Permission>()
@@ -51,6 +52,11 @@ object PermissionsProcessor {
                         val ids = setOf("table/$id") + indexes.map { "table/$id/index/$it" }
 
                         permissions.add(Permission(AwsResource.DynamoDB, level, ids))
+                    }
+                    SNSTopic::class -> {
+                        val id = annotation.getValue(context, SNSTopic::topic)!!
+                        val level = annotation.getEnumValue(context, SNSTopic::level)!!
+                        permissions.add(Permission(AwsResource.SNS, level, setOf(id)))
                     }
                 }
             }
