@@ -7,6 +7,7 @@ import io.kotless.dsl.lang.DynamoDBTable
 import io.kotless.dsl.lang.S3Bucket
 import io.kotless.dsl.lang.SSMParameters
 import io.kotless.parser.utils.psi.annotation.getAnnotations
+import io.kotless.parser.utils.psi.annotation.getArrayValue
 import io.kotless.parser.utils.psi.annotation.getEnumValue
 import io.kotless.parser.utils.psi.annotation.getValue
 import io.kotless.parser.utils.psi.visitAnnotatedWithReferences
@@ -46,7 +47,10 @@ object PermissionsProcessor {
                     DynamoDBTable::class -> {
                         val id = annotation.getValue(context, DynamoDBTable::table)!!
                         val level = annotation.getEnumValue(context, DynamoDBTable::level)!!
-                        permissions.add(Permission(AwsResource.DynamoDB, level, setOf("table/$id")))
+                        val indexes = annotation.getArrayValue(context, DynamoDBTable::indexes) ?: emptyArray()
+                        val ids = setOf("table/$id") + indexes.map { "table/$id/index/$it" }
+
+                        permissions.add(Permission(AwsResource.DynamoDB, level, ids))
                     }
                 }
             }
